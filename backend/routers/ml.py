@@ -1,6 +1,6 @@
 import os
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, Request
+from pydantic import BaseModel, Field
 import pandas as pd
 import numpy as np
 import joblib
@@ -8,6 +8,7 @@ import json
 from sqlalchemy.orm import Session
 from database import get_db
 from models import domain
+from limiter import limiter
 
 router = APIRouter()
 
@@ -28,31 +29,32 @@ except Exception as e:
     print(f"Error loading models: {e}")
 
 class FloodRequest(BaseModel):
-    rainfall: float
-    river_level: float
-    humidity: float
-    drainage_complaints: int
-    district: int
+    rainfall: float = Field(..., ge=0, le=1000, description="Rainfall in mm")
+    river_level: float = Field(..., ge=0, le=50, description="River level in meters")
+    humidity: float = Field(..., ge=0, le=100, description="Humidity percentage")
+    drainage_complaints: int = Field(..., ge=0, le=10000, description="Count of complaints")
+    district: int = Field(..., ge=1, le=100, description="District ID")
 
 class AnomalyRequest(BaseModel):
-    AQI: float
-    temperature: float
-    humidity: float
-    emissions: float
-    waste_collection_delay: float
+    AQI: float = Field(..., ge=0, le=1000, description="Air Quality Index")
+    temperature: float = Field(..., ge=-50, le=60, description="Temperature in Celsius")
+    humidity: float = Field(..., ge=0, le=100, description="Humidity percentage")
+    emissions: float = Field(..., ge=0, le=10000, description="Emissions level")
+    waste_collection_delay: float = Field(..., ge=0, le=100, description="Delay in days")
 
 @router.post("/predict/flood")
-def predict_flood(req: FloodRequest):
+@limiter.limit("30/minute")
+def predict_flood(request: Request, payload: FloodRequest):
     if not flood_model:
         return {"error": "Flood model not loaded"}
 
     # Prepare features: rainfall, river_level, humidity, drainage_complaints, district
     features = pd.DataFrame([{
-        'rainfall': req.rainfall,
-        'river_level': req.river_level,
-        'humidity': req.humidity,
-        'drainage_complaints': req.drainage_complaints,
-        'district': req.district
+        'rainfall': payload.rainfall,
+        'river_level': payload.river_level,
+        'humidity': payload.humidity,
+        'drainage_complaints': payload.drainage_complaints,
+        'district': payload.district
     }])
 
     # Predict risk score (0-100)
@@ -73,18 +75,18 @@ def predict_flood(req: FloodRequest):
 
     # Generate reasoning
     reasoning = []
-    if req.rainfall > 100:
-        reasoning.append(f"Heavy rainfall detected ({req.rainfall:.1f}mm)")
-    elif req.rainfall > 50:
-        reasoning.append(f"Moderate rainfall detected ({req.rainfall:.1f}mm)")
+    if payload.rainfall > 100:
+        reasoning.append(f"Heavy rainfall detected ({payload.rainfall:.1f}mm)")
+    elif payload.rainfall > 50:
+        reasoning.append(f"Moderate rainfall detected ({payload.rainfall:.1f}mm)")
         
-    if req.river_level > 10:
-        reasoning.append(f"River level critically high ({req.river_level:.1f}m)")
-    elif req.river_level > 7:
-        reasoning.append(f"River level elevated ({req.river_level:.1f}m)")
+    if payload.river_level > 10:
+        reasoning.append(f"River level critically high ({payload.river_level:.1f}m)")
+    elif payload.river_level > 7:
+        reasoning.append(f"River level elevated ({payload.river_level:.1f}m)")
         
-    if req.drainage_complaints > 20:
-        reasoning.append(f"High volume of drainage complaints ({req.drainage_complaints})")
+    if payload.drainage_complaints > 20:
+        reasoning.append(f"High volume of drainage complaints ({payload.drainage_complaints})")
         
     if len(reasoning) == 0:
         reasoning.append("All metrics are within normal baseline ranges.")
@@ -109,17 +111,18 @@ def predict_flood(req: FloodRequest):
     }
 
 @router.post("/predict/anomaly")
-def predict_anomaly(req: AnomalyRequest):
+@limiter.limit("30/minute")
+def predict_anomaly(request: Request, payload: AnomalyRequest):
     if not anomaly_model:
         return {"error": "Anomaly model not loaded"}
 
     # Prepare features: AQI, temperature, humidity, emissions, waste_collection_delay
     features = pd.DataFrame([{
-        'AQI': req.AQI,
-        'temperature': req.temperature,
-        'humidity': req.humidity,
-        'emissions': req.emissions,
-        'waste_collection_delay': req.waste_collection_delay
+        'AQI': payload.AQI,
+        'temperature': payload.temperature,
+        'humidity': payload.humidity,
+        'emissions': payload.emissions,
+        'waste_collection_delay': payload.waste_collection_delay
     }])
 
     # Predict (-1 is anomaly, 1 is normal)
@@ -136,10 +139,10 @@ def predict_anomaly(req: AnomalyRequest):
     recommendation = "Continue standard monitoring."
     
     if is_anomaly:
-        if req.AQI > 150 or req.emissions > 300:
+        if payload.AQI > 150 or payload.emissions > 300:
             severity = "High"
             recommendation = "Issue pollution advisory and restrict heavy industry."
-        elif req.waste_collection_delay > 5:
+        elif payload.waste_collection_delay > 5:
             severity = "Moderate"
             recommendation = "Dispatch emergency waste collection fleets."
         else:

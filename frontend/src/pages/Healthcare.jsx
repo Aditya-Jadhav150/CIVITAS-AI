@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Users, PlusCircle, AlertTriangle, ArrowUpRight, ArrowDownRight, CheckCircle2, ChevronRight, Stethoscope, Droplets, Map, Brain, ShieldAlert, Ambulance, RefreshCw } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { Activity, ShieldAlert, HeartPulse, Building2, Stethoscope, Ambulance, Brain, ChevronRight, TrendingUp, AlertCircle, Map, Users, PlusCircle, AlertTriangle, ArrowUpRight, ArrowDownRight, CheckCircle2, Droplets, RefreshCw } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, LineChart, Line } from 'recharts';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
+import { API_BASE_URL } from '../config';
 import L from 'leaflet';
 
 // Fix for default marker icon in react-leaflet
@@ -51,7 +52,7 @@ export default function Healthcare() {
   const fetchHealthcareData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/healthcare/forecast?hospital=City+General');
+      const response = await fetch(`${API_BASE_URL}/healthcare/forecast?hospital=City+General`);
       const data = await response.json();
       setAiData(data);
 

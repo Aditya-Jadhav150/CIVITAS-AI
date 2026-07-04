@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, AlertTriangle, Users, Wind, MapPin } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
+import { WS_BASE_URL } from '../config';
 const mockChartData = [
   { name: '00:00', risk: 40 },
   { name: '04:00', risk: 30 },
@@ -40,7 +40,7 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    const ws = new WebSocket('ws://127.0.0.1:8000/ws');
+    const ws = new WebSocket(WS_BASE_URL);
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === 'LIVE_UPDATE' && data.data) {

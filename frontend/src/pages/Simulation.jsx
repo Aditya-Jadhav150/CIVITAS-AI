@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Settings, Play, ShieldAlert, CheckCircle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Simulation() {
   const [params, setParams] = useState({
@@ -16,7 +17,7 @@ export default function Simulation() {
   const handleSimulate = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/simulate', params);
+      const response = await axios.post(`${API_BASE_URL}/simulate`, params);
       setResult(response.data.simulation_results);
     } catch (err) {
       console.error(err);

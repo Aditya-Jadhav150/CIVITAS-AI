@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, X } from 'lucide-react';
+import { WS_BASE_URL } from '../config';
 
 export default function AnomalyAlerts() {
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
     // Connect to WebSocket
-    const ws = new WebSocket('ws://127.0.0.1:8000/ws');
+    const ws = new WebSocket(WS_BASE_URL);
     
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);

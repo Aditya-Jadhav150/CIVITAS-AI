@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Wind, Droplet, Sun, Trash2, Brain, Map, ShieldAlert, CheckCircle2, ChevronRight, AlertTriangle, ArrowUpRight, ArrowDownRight, Factory, RefreshCw } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { API_BASE_URL } from '../config';
 import L from 'leaflet';
 
 // Fix for default marker icon in react-leaflet
@@ -46,8 +47,8 @@ export default function Environment() {
   const fetchEnvironmentData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch current environment metrics
-      const envRes = await fetch('http://localhost:8000/api/environment/current');
+      // 1. Fetch current environment metrics (mocked for now, but wired to backend)
+      const envRes = await fetch(`${API_BASE_URL}/environment/current`);
       const envData = await envRes.json();
       
       setMetrics({
@@ -60,7 +61,7 @@ export default function Environment() {
       });
 
       // 2. Predict anomalies using the ML endpoint
-      const anomalyRes = await fetch('http://localhost:8000/api/predict/anomaly', {
+      const anomalyRes = await fetch(`${API_BASE_URL}/predict/anomaly`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,7 +129,7 @@ export default function Environment() {
     // Force a spike to test the anomaly detector
     setLoading(true);
     try {
-      const anomalyRes = await fetch('http://localhost:8000/api/predict/anomaly', {
+      const anomalyRes = await fetch(`${API_BASE_URL}/predict/anomaly`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

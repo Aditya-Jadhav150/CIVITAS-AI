@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -19,7 +20,7 @@ export default function Emergency() {
   const fetchFloodRisk = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/predict/flood', {
+      const response = await fetch(`${API_BASE_URL}/predict/flood`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -8,6 +8,7 @@ import Environment from './pages/Environment';
 import OperationsWorkspace from './pages/AIAssistant'; // Will rename component internally later
 import Simulation from './pages/Simulation';
 import AnomalyAlerts from './components/AnomalyAlerts';
+import { WS_BASE_URL } from './config';
 
 function Sidebar() {
   const location = useLocation();
@@ -67,7 +68,7 @@ function GlobalTopBar({ role, setRole }) {
   });
 
   useEffect(() => {
-    const ws = new WebSocket('ws://127.0.0.1:8000/ws');
+    const ws = new WebSocket(WS_BASE_URL);
     
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);

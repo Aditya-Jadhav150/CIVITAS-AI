@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Send, Bot, User, Plus, MessageSquare, Brain, MapPin, Activity, AlertTriangle, ChevronRight, FileText, LayoutDashboard, History, ShieldAlert, CheckCircle2, Clock, Zap, ArrowDown } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const SituationCard = ({ situation }) => (
   <div className="bg-surface border border-white/10 p-4 rounded-xl shadow-lg mb-4">
@@ -165,7 +166,7 @@ export default function OperationsWorkspace({ role }) {
 
   const fetchSessions = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/sessions');
+      const res = await axios.get(`${API_BASE_URL}/sessions`);
       setSessions(res.data);
       if (res.data.length > 0 && !activeSessionId) {
         loadSession(res.data[0].id);
@@ -179,7 +180,7 @@ export default function OperationsWorkspace({ role }) {
 
   const createNewSession = async () => {
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/sessions', { title: 'New Operation' });
+      const res = await axios.post(`${API_BASE_URL}/sessions`, { title: 'New Operation' });
       await fetchSessions();
       loadSession(res.data.id);
     } catch (e) {
@@ -190,7 +191,7 @@ export default function OperationsWorkspace({ role }) {
   const loadSession = async (id) => {
     setActiveSessionId(id);
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/api/sessions/${id}`);
+      const res = await axios.get(`${API_BASE_URL}/sessions/${id}`);
       setMessages(res.data.messages || []);
       setActiveContext({ ...res.data.context, session: res.data.session } || {});
     } catch (e) {
@@ -208,7 +209,7 @@ export default function OperationsWorkspace({ role }) {
     setIsTyping(true);
 
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/api/chat/${activeSessionId}`, { message: textToSend, role: role || 'Operations' });
+      const response = await axios.post(`${API_BASE_URL}/chat/${activeSessionId}`, { message: textToSend, role: role || 'Operations' });
       const apiResponse = {
         id: Date.now() + 1,
         role: 'ai',
@@ -238,7 +239,7 @@ export default function OperationsWorkspace({ role }) {
     setMessages(prev => [...prev, reqMsg]);
     setIsTyping(true);
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/executive-briefing`);
+      const response = await axios.get(`${API_BASE_URL}/executive-briefing`);
       const apiResponse = {
         id: Date.now() + 1,
         role: 'ai',

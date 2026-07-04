@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
 import uuid
@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.domain import ChatSession, ChatMessage, OperationalContext
 from ai.assistant import ask_assistant, generate_executive_briefing
+from limiter import limiter
 
 router = APIRouter()
 
@@ -63,19 +64,20 @@ def get_session_history(session_id: str, db: Session = Depends(get_db)):
     }
 
 @router.post("/chat/{session_id}")
-def chat_with_ai(session_id: str, request: ChatRequest, db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def chat_with_ai(session_id: str, request: Request, payload: ChatRequest, db: Session = Depends(get_db)):
     # Verify session
     db_session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
     if not db_session:
         raise HTTPException(status_code=404, detail="Session not found")
         
     # Save user message
-    user_msg = ChatMessage(session_id=session_id, role="user", message=request.message)
+    user_msg = ChatMessage(session_id=session_id, role="user", message=payload.message)
     db.add(user_msg)
     db.commit()
 
     # Get response from AI (Passing Role!)
-    ai_response_data = ask_assistant(request.message, session_id, db, role=request.role)
+    ai_response_data = ask_assistant(payload.message, session_id, db, role=payload.role)
     
     # Save AI message
     ai_msg = ChatMessage(session_id=session_id, role="ai", message=ai_response_data.get("response", ""))

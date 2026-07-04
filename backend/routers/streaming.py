@@ -88,5 +88,8 @@ async def websocket_endpoint(websocket: WebSocket):
             
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+    except Exception as e:
+        manager.disconnect(websocket)
+        print(f"WebSocket Error: {e}")
     finally:
         db.close()
