@@ -17,10 +17,11 @@ build/
 .DS_Store
 
 # Machine Learning & DBs
-*.db
-*.sqlite
-*.sqlite3
-*.pkl
-chromadb/
-backend/ml/*.pkl
-backend/chroma_db/
+# We are intentionally including SQLite and .pkl files for the Hackathon deployment
+# *.db
+# *.sqlite
+# *.sqlite3
+# *.pkl
+# chromadb/
+# backend/ml/*.pkl
+# backend/chroma_db/
