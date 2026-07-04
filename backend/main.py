@@ -24,7 +24,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Setup CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "https://civitas-ai.vercel.app"],
+    allow_origins=["*"], # Allow any frontend domain for Hackathon deployment
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
