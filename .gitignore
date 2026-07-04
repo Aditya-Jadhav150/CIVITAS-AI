@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+
+# Node
+node_modules/
+dist/
+build/
+.DS_Store
+
+# Machine Learning & DBs
+*.db
+*.sqlite
+*.sqlite3
+*.pkl
+chromadb/
+backend/ml/*.pkl
