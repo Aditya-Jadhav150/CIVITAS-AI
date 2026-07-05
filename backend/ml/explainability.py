@@ -18,8 +18,16 @@ def get_flood_risk_explanation(rainfall: float, humidity: float, river_level: fl
     if flood_model is None:
         return 0.0, "Model not trained yet."
     
-    # Predict
-    features = np.array([[rainfall, humidity, river_level, drainage]])
+    import pandas as pd
+    
+    # Predict using 5 features as trained (district hardcoded or default for simulation)
+    features = pd.DataFrame([{
+        'rainfall': rainfall,
+        'river_level': river_level,
+        'humidity': humidity,
+        'drainage_complaints': drainage,
+        'district': 1
+    }])
     risk_score = float(flood_model.predict(features)[0])
     
     # Explainability (simplified logic based on input thresholds and mock model importance)
@@ -42,11 +50,11 @@ def get_flood_risk_explanation(rainfall: float, humidity: float, river_level: fl
     
     # Workflow Automation Rules
     automated_actions = []
-    if risk_score > 0.8:
+    if risk_score > 80:
         automated_actions.append("TRIGGER ALERT: High Flood Risk")
         automated_actions.append("RECOMMEND: Deploy mobile pumps to affected zones.")
         automated_actions.append("RECOMMEND: Prepare evacuation shelters.")
-    elif risk_score > 0.6:
+    elif risk_score > 60:
         automated_actions.append("RECOMMEND: Increase infrastructure monitoring.")
         
     return {
