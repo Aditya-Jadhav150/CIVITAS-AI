@@ -89,8 +89,8 @@ export default function Simulation() {
             <div className="space-y-6 animate-in fade-in zoom-in duration-300">
               <div className="flex items-center justify-between p-4 rounded-xl bg-surface border border-white/5">
                 <span className="text-gray-400">Predicted Flood Risk</span>
-                <span className={`text-3xl font-bold ${result.flood_risk > 0.7 ? 'text-danger' : result.flood_risk > 0.4 ? 'text-warning' : 'text-secondary'}`}>
-                  {(result.flood_risk * 100).toFixed(1)}%
+                <span className={`text-3xl font-bold ${result.flood_risk > 70 ? 'text-danger' : result.flood_risk > 40 ? 'text-warning' : 'text-secondary'}`}>
+                  {result.flood_risk.toFixed(1)}%
                 </span>
               </div>
               
