@@ -177,15 +177,18 @@ def ask_assistant(question: str, session_id: str, db: Session, role: str = "Oper
     
     raw_response = rag_chain.invoke(question)
     
-    # Clean JSON if wrapped in markdown
-    json_str = raw_response.strip()
-    if json_str.startswith("```json"):
-        json_str = json_str[7:]
-    if json_str.startswith("```"):
-        json_str = json_str[3:]
-    if json_str.endswith("```"):
-        json_str = json_str[:-3]
-    json_str = json_str.strip()
+    # Clean JSON if wrapped in markdown or surrounded by text
+    match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw_response, re.DOTALL)
+    if match:
+        json_str = match.group(1).strip()
+    else:
+        # fallback: find the first { and last }
+        start = raw_response.find('{')
+        end = raw_response.rfind('}')
+        if start != -1 and end != -1:
+            json_str = raw_response[start:end+1].strip()
+        else:
+            json_str = raw_response.strip()
 
     context_update = {}
     try:
