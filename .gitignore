@@ -25,3 +25,7 @@ build/
 # chromadb/
 # backend/ml/*.pkl
 # backend/chroma_db/
+
+# Presentation Decks
+*.ppt
+*.pptx
