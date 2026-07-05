@@ -55,13 +55,25 @@ def get_session_history(session_id: str, db: Session = Depends(get_db)):
         },
         "messages": [{"id": m.id, "role": m.role, "text": m.message, "timestamp": m.timestamp} for m in messages],
         "context": {
-            "active_district": context.active_district if context else None,
-            "emergency_type": context.emergency_type if context else None,
-            "current_focus": context.current_focus if context else None,
-            "priority_level": context.priority_level if context else None,
-            "affected_population": context.affected_population if context else None
+            "active_district": context.active_district if context else "All Districts",
+            "emergency_type": context.emergency_type if context else "None",
+            "current_focus": context.current_focus if context else "MONITORING",
+            "priority_level": context.priority_level if context else "Low",
+            "affected_population": context.affected_population if context else 0
         }
     }
+
+@router.delete("/sessions/{session_id}")
+def delete_session(session_id: str, db: Session = Depends(get_db)):
+    db_session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
+    db.query(OperationalContext).filter(OperationalContext.session_id == session_id).delete()
+    db.delete(db_session)
+    db.commit()
+    return {"status": "deleted"}
 
 @router.post("/chat/{session_id}")
 @limiter.limit("20/minute")

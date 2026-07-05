@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Send, Bot, User, Plus, MessageSquare, Brain, MapPin, Activity, AlertTriangle, ChevronRight, FileText, LayoutDashboard, History, ShieldAlert, CheckCircle2, Clock, Zap, ArrowDown } from 'lucide-react';
+import { Send, Bot, User, Plus, MessageSquare, Brain, MapPin, Activity, AlertTriangle, ChevronRight, FileText, LayoutDashboard, History, ShieldAlert, CheckCircle2, Clock, Zap, ArrowDown, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 const SituationCard = ({ situation }) => (
@@ -199,6 +199,21 @@ export default function OperationsWorkspace({ role }) {
     }
   };
 
+  const deleteSession = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await axios.delete(`${API_BASE_URL}/sessions/${id}`);
+      if (activeSessionId === id) {
+        setActiveSessionId(null);
+        setMessages([]);
+        setActiveContext({});
+      }
+      fetchSessions();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleSend = async (overrideText = null) => {
     const textToSend = overrideText || input;
     if (!textToSend.trim() || !activeSessionId) return;
@@ -283,11 +298,20 @@ export default function OperationsWorkspace({ role }) {
                 <button
                   key={s.id}
                   onClick={() => loadSession(s.id)}
-                  className={`w-full flex flex-col gap-2 p-3 rounded-xl transition-colors text-left ${activeSessionId === s.id ? 'bg-primary/20 border border-primary/30 text-white shadow-lg' : 'glass-panel text-gray-400 hover:text-gray-200'}`}
+                  className={`group w-full flex flex-col gap-2 p-3 rounded-xl transition-colors text-left ${activeSessionId === s.id ? 'bg-primary/20 border border-primary/30 text-white shadow-lg' : 'glass-panel text-gray-400 hover:text-gray-200'}`}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="truncate text-sm font-bold w-4/5">{s.title}</span>
-                    <div className={`w-2 h-2 rounded-full ${s.status === 'ESCALATED' ? 'bg-danger animate-pulse' : 'bg-primary'}`}></div>
+                    <span className="truncate text-sm font-bold w-3/4">{s.title}</span>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        onClick={(e) => deleteSession(e, s.id)}
+                        className="text-gray-500 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Delete Operation"
+                      >
+                        <Trash2 size={14} />
+                      </div>
+                      <div className={`w-2 h-2 rounded-full ${s.status === 'ESCALATED' ? 'bg-danger animate-pulse' : 'bg-primary'}`}></div>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between w-full text-xs opacity-70">
                     <span>{s.status}</span>
@@ -310,10 +334,19 @@ export default function OperationsWorkspace({ role }) {
                 <button
                   key={s.id}
                   onClick={() => loadSession(s.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${activeSessionId === s.id ? 'bg-white/10 border border-white/30 text-white' : 'glass-panel text-gray-500 hover:text-gray-300'}`}
+                  className={`group w-full flex items-center justify-between p-3 rounded-xl transition-colors text-left ${activeSessionId === s.id ? 'bg-white/10 border border-white/30 text-white' : 'glass-panel text-gray-500 hover:text-gray-300'}`}
                 >
-                  <CheckCircle2 size={16} className="opacity-50" />
-                  <span className="truncate text-sm">{s.title}</span>
+                  <div className="flex items-center gap-3 truncate w-[85%]">
+                    <CheckCircle2 size={16} className="opacity-50 min-w-[16px]" />
+                    <span className="truncate text-sm">{s.title}</span>
+                  </div>
+                  <div 
+                    onClick={(e) => deleteSession(e, s.id)}
+                    className="text-gray-500 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    title="Delete Archive"
+                  >
+                    <Trash2 size={14} />
+                  </div>
                 </button>
               ))}
             </div>
